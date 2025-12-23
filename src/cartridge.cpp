@@ -38,17 +38,33 @@ void Cartridge::setup_tables(){
 }
 
 std::uint8_t Cartridge::read(std::uint16_t addr){
-        if(addr < 0x4000) return rom[addr];
+        if (addr < 0x8000){
 
-        if(addr >= 0x4000 && addr <= 0x7FFF){
-                std::size_t offset{static_cast<size_t>((rom_bank_value * 0x4000) + (addr-0x4000))};
-                if(offset < rom.size()) return rom[offset];
+                std::uint32_t bank{rom_bank_value};
+                if (banking_mode == 0){
+                        bank |= (ram_bank_value << 5);
+                }
+
+                if (addr < 0x4000){
+                        return rom[addr];
+                }
+                std::uint32_t offset{static_cast<std::uint32_t>((bank * 0x4000) + (addr - 0x4000))};
+
+                return rom[offset % rom.size()];
         }
 
-        if(addr >= 0xA000 && addr <= 0xBFFF){
-                if(!ram_enabled) return 0xFF;
-                std::size_t offset{static_cast<size_t>((ram_bank_value * 0x2000) + (addr-0xA000))};
-                if(offset < eram.size()) return eram[offset];
+
+        if (addr >= 0xA000 && addr <= 0xBFFF) {
+                if (!ram_enabled) return 0xFF;
+                std::uint32_t current_ram_bank{0};
+                if (banking_mode == 1) {
+                        current_ram_bank = ram_bank_value;
+                }
+
+                std::size_t offset{static_cast<std::size_t>((current_ram_bank * 0x2000) + (addr - 0xA000))};
+                if (offset < eram.size()) {
+                        return eram[offset];
+                }
         }
         return 0xFF;
 }
@@ -73,11 +89,16 @@ bool Cartridge::write(std::uint16_t addr, std::uint8_t data){
         }
         if(addr >= 0xA000 && addr <= 0xBFFF){
                 if(ram_enabled){
-                        std::size_t offset{static_cast<std::size_t>((ram_bank_value * 0x2000) + (addr - 0xA000))};
+                        std::uint32_t current_ram_bank{0};
+                        if (banking_mode == 1) {
+                                current_ram_bank = ram_bank_value;
+                        }
+
+                        std::size_t offset = (current_ram_bank * 0x2000) + (addr - 0xA000);
+
                         if(offset < eram.size()){
                                 eram[offset] = data;
-                        }
-                }
+                        }                }
                 return true;
         }
         return false;
