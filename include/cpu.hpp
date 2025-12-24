@@ -11,6 +11,10 @@ class CPU {
                 explicit CPU();
                 void connect_to_bus(const std::shared_ptr<Bus>& bus);
                 void step();
+        private:
+                // note every ldh uses little endian address
+                std::uint8_t fetch_byte();
+                std::uint16_t fetch_word();
                 void nop();
                 void load_bc();
                 void load_addr_bc_a();
@@ -256,8 +260,6 @@ class CPU {
                 void ei();
                 void cp_a();
                 void rst_38h();
-        private:
-                // note every ldh uses little endian address
                 union {
                         struct {
                                 std::uint8_t unused       : 4; // BITS 4
@@ -293,7 +295,7 @@ class CPU {
                 std::uint16_t pc{};
                 std::uint16_t sp{};
                 std::shared_ptr<Bus> bus{};
-                using OpCodeHandler = std::function<void(Bus&)>;
+                using OpCodeHandler = std::function<void()>;
                 std::vector<OpCodeHandler> lookup_table{};
 
 };
