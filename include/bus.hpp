@@ -11,7 +11,7 @@ constexpr std::size_t HRAM_SIZE{127};
 class Cartridge;
 class Bus {
         public:
-                explicit Bus();
+                explicit Bus() = default;
                 std::uint8_t read(std::uint16_t addr);
                 bool write(std::uint16_t addr, std::uint8_t data);
                 void insert_cartridge(const std::shared_ptr<Cartridge>& cart);

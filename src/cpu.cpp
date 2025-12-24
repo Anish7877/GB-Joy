@@ -266,6 +266,12 @@ void CPU::connect_to_bus(const std::shared_ptr<Bus>& bus){
         this->bus = bus;
 }
 
+void CPU::step(){
+        std::uint8_t op_code{bus->read(pc)};
+        pc++;
+        lookup_table[op_code]();
+}
+
 std::uint8_t CPU::fetch_byte(){
         std::uint8_t byte{bus->read(pc)};
         pc++;
@@ -275,7 +281,22 @@ std::uint8_t CPU::fetch_byte(){
 std::uint16_t CPU::fetch_word(){
         std::uint8_t low{fetch_byte()};
         std::uint8_t high{fetch_byte()};
-        return (high<<8) | low;
+        return static_cast<std::uint16_t>((static_cast<std::uint16_t>(high)<<8) | static_cast<std::uint16_t>(low));
+}
+
+void CPU::push_word(std::uint16_t word){
+        sp--;
+        bus->write(sp, static_cast<std::uint8_t>(word>>8));
+        sp--;
+        bus->write(sp, static_cast<std::uint8_t>(word&0xFF));
+}
+
+std::uint16_t CPU::pop_word(){
+        std::uint8_t low{bus->read(sp)};
+        sp++;
+        std::uint8_t high{bus->read(sp)};
+        sp++;
+        return static_cast<std::uint16_t>((static_cast<std::uint16_t>(high)<<8) | static_cast<std::uint16_t>(low));
 }
 
 void CPU::nop(){
@@ -888,7 +909,7 @@ void CPU::load_addr_hl_l(){
 }
 
 void CPU::halt(){
-        // TO DO implement interrupt enable register and iem
+        // TO DO implement interrupt enable register
 }
 
 void CPU::load_addr_hl_a(){
@@ -1495,160 +1516,334 @@ void CPU::cp_a_a(){
 }
 
 void CPU::ret_nz(){
+        std::uint16_t ret_addr{pop_word()};
+        if(!zero){
+                pc = ret_addr;
+        }
 }
 
 void CPU::pop_bc(){
+        bc = pop_word();
 }
 
 void CPU::jp_nz(){
+        std::uint16_t effective_addr{fetch_word()};
+        if(!zero){
+                pc = effective_addr;
+        }
 }
 
 void CPU::jp(){
+        std::uint16_t effective_addr{fetch_word()};
+        pc = effective_addr;
 }
 
 void CPU::call_nz(){
+        std::uint16_t effective_addr{fetch_word()};
+        if(!zero){
+                push_word(pc);
+                pc = effective_addr;
+        }
 }
 
 void CPU::push_bc(){
+        push_word(bc);
 }
 
 void CPU::add_a(){
+        std::uint8_t val{fetch_byte()};
+        std::uint16_t res{static_cast<std::uint16_t>(static_cast<std::uint16_t>(a)+static_cast<std::uint16_t>(val))};
+        half_carry = (((a&0x0F)+(val&0xF)) > 0x0F);
+        carry = (res > 0xFF);
+        a = static_cast<std::uint8_t>(res);
+        zero = (a == 0);
+        n_flag = 0;
 }
 
 void CPU::rst_00h(){
+        push_word(pc);
+        pc = 0x00;
 }
 
 void CPU::ret_z(){
+        std::uint16_t ret_addr{pop_word()};
+        if(zero){
+                pc = ret_addr;
+        }
 }
 
 void CPU::ret(){
+        std::uint16_t ret_addr{pop_word()};
+        pc = ret_addr;
 }
 
 void CPU::jp_z(){
+        std::uint16_t effective_addr{fetch_word()};
+        if(zero){
+                pc = effective_addr;
+        }
 }
 
 void CPU::prefix(){
+        // TO DO -> cb_lookup_table
 }
 
 void CPU::call_z(){
+        std::uint16_t effective_addr{fetch_word()};
+        if(zero){
+                push_word(pc);
+                pc = effective_addr;
+        }
 }
 
 void CPU::call(){
+        std::uint16_t effective_addr{fetch_word()};
+        push_word(pc);
+        pc = effective_addr;
 }
 
 void CPU::adc_a(){
+        std::uint8_t val{fetch_byte()};
+        std::uint16_t res{static_cast<std::uint16_t>(static_cast<std::uint16_t>(a)+
+                                                     static_cast<std::uint16_t>(val)+
+                                                     static_cast<std::uint16_t>(carry))};
+        half_carry = (((a&0x0F)+(val&0xF)+carry) > 0x0F);
+        carry = (res > 0xFF);
+        a = static_cast<std::uint8_t>(res);
+        zero = (a == 0);
+        n_flag = 0;
 }
 
 void CPU::rst_08h(){
+        push_word(pc);
+        pc = 0x08;
 }
 
 void CPU::ret_nc(){
+        std::uint16_t ret_addr{pop_word()};
+        if(!carry){
+                pc = ret_addr;
+        }
 }
 
 void CPU::pop_de(){
+        de = pop_word();
 }
 
 void CPU::jp_nc(){
+        std::uint16_t effective_addr{fetch_word()};
+        if(!carry){
+                pc = effective_addr;
+        }
 }
 
 void CPU::call_nc(){
+        std::uint16_t effective_addr{fetch_word()};
+        if(!carry){
+                push_word(pc);
+                pc = effective_addr;
+        }
 }
 
 void CPU::push_de(){
+        push_word(de);
 }
 
 void CPU::sub_a(){
+        std::uint8_t val{fetch_byte()};
+        half_carry = ((a&0x0F) < (val&0x0F));
+        carry = (a < val);
+        a -= val;
+        zero = (a == 0);
+        n_flag = 1;
 }
 
 void CPU::rst_10h(){
+        push_word(pc);
+        pc = 0x10;
 }
 
 void CPU::ret_c(){
+        std::uint16_t ret_addr{pop_word()};
+        if(carry){
+                pc = ret_addr;
+        }
 }
 
 void CPU::reti(){
+        ret();
+        // interrupt_master_enable = true;
 }
 
 void CPU::jp_c(){
+        std::uint16_t effective_addr{fetch_word()};
+        if(carry){
+                pc = effective_addr;
+        }
 }
 
 void CPU::call_c(){
+        std::uint16_t effective_addr{fetch_word()};
+        if(carry){
+                push_word(pc);
+                pc = effective_addr;
+        }
 }
 
 void CPU::sbc_a(){
+        std::uint8_t val{fetch_byte()};
+        std::int16_t res{static_cast<std::int16_t>(
+                         static_cast<std::int16_t>(a)-
+                         static_cast<std::int16_t>(val)-
+                         static_cast<std::int16_t>(carry)
+                        )};
+        half_carry = (((a&0x0F) - (val&0x0F) - carry) < 0);
+        carry = (res < 0);
+        a = static_cast<std::uint8_t>(res);
+        zero = (a == 0);
+        n_flag = 1;
 }
 
 void CPU::rst_18h(){
+        push_word(pc);
+        pc = 0x18;
 }
 
 void CPU::ldh_addr_a(){
+        std::uint8_t offset{fetch_byte()};
+        std::uint16_t addr{static_cast<std::uint16_t>(static_cast<std::uint16_t>(0xFF00) | static_cast<std::uint16_t>(offset))};
+        bus->write(addr, a);
 }
 
 void CPU::pop_hl(){
+        hl = pop_word();
 }
 
 void CPU::ldh_addr_c_a(){
+        std::uint16_t addr{static_cast<std::uint16_t>(static_cast<std::uint16_t>(0xFF00) | static_cast<std::uint16_t>(c))};
+        bus->write(addr, a);
 }
 
 void CPU::push_hl(){
+        push_word(hl);
 }
 
 void CPU::and_a(){
+        std::uint8_t val{fetch_byte()};
+        a &= val;
+        zero = (a == 0);
+        n_flag = 0;
+        half_carry = 1;
+        carry = 0;
 }
 
 void CPU::rst_20h(){
+        push_word(pc);
+        pc = 0x20;
 }
 
 void CPU::add_sp(){
+        std::int8_t offset{static_cast<std::int8_t>(fetch_byte())};
+        half_carry = (((sp & 0x0F) + (offset & 0x0F)) > 0x0F);
+        carry = (((sp & 0xFF) + (offset & 0xFF)) > 0xFF);
+        sp += offset;
+        zero = 0;
+        n_flag = 0;
 }
 
 void CPU::jp_hl(){
+        pc = hl;
 }
 
 void CPU::load_addr_a(){
+        std::uint16_t addr{fetch_word()};
+        bus->write(addr, a);
 }
 
 void CPU::xor_a(){
+        std::uint8_t val{fetch_byte()};
+        a ^= val;
+        zero = (a == 0);
+        n_flag = 0;
+        half_carry = 0;
+        carry = 0;
 }
 
 void CPU::rst_28h(){
+        push_word(pc);
+        pc = 0x28;
 }
 
 void CPU::ldh_a_addr(){
+        std::uint8_t addr{fetch_byte()};
+        std::uint16_t effective_addr{static_cast<std::uint16_t>(
+                                     static_cast<std::uint16_t>(0xFF00) | static_cast<std::uint16_t>(addr))};
+        a = bus->read(effective_addr);
 }
 
 void CPU::pop_af(){
+        af = pop_word()&0xFFF0;
 }
 
 void CPU::ldh_a_addr_c(){
+        std::uint16_t effective_addr{static_cast<std::uint16_t>(
+                                     static_cast<std::uint16_t>(0xFF00) | static_cast<std::uint16_t>(c))};
+        a = bus->read(effective_addr);
 }
 
 void CPU::di(){
+        // disable interrupt
 }
 
 void CPU::push_af(){
+        push_word(af);
 }
 
 void CPU::or_a(){
+        std::uint8_t val{fetch_byte()};
+        a |= val;
+        zero = (a == 0);
+        n_flag = 0;
+        half_carry = 0;
+        carry = 0;
 }
 
 void CPU::rst_30h(){
+        push_word(pc);
+        pc = 0x30;
 }
 
 void CPU::load_hl_sp_add(){
+        std::int8_t offset{static_cast<std::int8_t>(fetch_byte())};
+        half_carry = (((sp & 0x0F) + (offset & 0x0F)) > 0x0F);
+        carry = (((sp & 0xFF) + (offset & 0xFF)) > 0xFF);
+        hl = sp+offset;
+        zero = 0;
+        n_flag = 0;
 }
 
 void CPU::load_sp_hl(){
+        sp = hl;
 }
 
 void CPU::load_a_addr(){
+        std::uint16_t addr{fetch_word()};
+        a = bus->read(addr);
 }
 
 void CPU::ei(){
+        // enable interrupt
 }
 
 void CPU::cp_a(){
+        std::uint8_t val{fetch_byte()};
+        zero = (a == val);
+        n_flag = 1;
+        half_carry = ((a&0x0F) < (val&0x0F));
+        carry = (a < val);
 }
 
 void CPU::rst_38h(){
+        push_word(pc);
+        pc = 0x38;
 }

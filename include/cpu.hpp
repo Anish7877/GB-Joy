@@ -15,6 +15,8 @@ class CPU {
                 // note every ldh uses little endian address
                 std::uint8_t fetch_byte();
                 std::uint16_t fetch_word();
+                void push_word(std::uint16_t word);
+                std::uint16_t pop_word();
                 void nop();
                 void load_bc();
                 void load_addr_bc_a();
@@ -262,38 +264,38 @@ class CPU {
                 void rst_38h();
                 union {
                         struct {
-                                std::uint8_t unused       : 4; // BITS 4
-                                std::uint8_t carry        : 1; // BITS 1
-                                std::uint8_t half_carry   : 1; // BITS 1
-                                std::uint8_t n_flag       : 1; // BITS 1
-                                std::uint8_t zero         : 1; // BITS 1
-                                std::uint8_t a;
+                                std::uint8_t unused       : 4{0}; // BITS 4
+                                std::uint8_t carry        : 1{1}; // BITS 1
+                                std::uint8_t half_carry   : 1{1}; // BITS 1
+                                std::uint8_t n_flag       : 1{0}; // BITS 1
+                                std::uint8_t zero         : 1{1}; // BITS 1
+                                std::uint8_t a{0x01};
                         };
-                        std::uint16_t af{};
+                        std::uint16_t af;
                 };
                 union {
                         struct {
-                                std::uint8_t c;
-                                std::uint8_t b;
+                                std::uint8_t c{0x13};
+                                std::uint8_t b{0x00};
                         };
-                        std::uint16_t bc{};
+                        std::uint16_t bc;
                 };
                 union {
                         struct {
-                                std::uint8_t e;
-                                std::uint8_t d;
+                                std::uint8_t e{0xD8};
+                                std::uint8_t d{0X00};
                         };
-                        std::uint16_t de{};
+                        std::uint16_t de;
                 };
                 union {
                         struct {
-                                std::uint8_t l;
-                                std::uint8_t h;
+                                std::uint8_t l{0x4D};
+                                std::uint8_t h{0x01};
                         };
-                        std::uint16_t hl{};
+                        std::uint16_t hl;
                 };
-                std::uint16_t pc{};
-                std::uint16_t sp{};
+                std::uint16_t pc{0x0100};
+                std::uint16_t sp{0xFFFE};
                 std::shared_ptr<Bus> bus{};
                 using OpCodeHandler = std::function<void()>;
                 std::vector<OpCodeHandler> lookup_table{};
