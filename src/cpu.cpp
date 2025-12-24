@@ -496,7 +496,7 @@ void CPU::inc_hl(){
 void CPU::inc_h(){
         half_carry = ((h&0x0f) == 0x0f);
         h++;
-        zero = (e==0);
+        zero = (h==0);
         n_flag = 0;
 }
 
@@ -892,7 +892,7 @@ void CPU::halt(){
 }
 
 void CPU::load_addr_hl_a(){
-        bus->write(hl, b);
+        bus->write(hl, a);
 }
 
 void CPU::load_a_b(){
