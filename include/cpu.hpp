@@ -10,10 +10,12 @@ class Bus;
 class CPU {
         public:
                 explicit CPU();
-                void connect_to_bus(const std::shared_ptr<Bus>& bus);
                 void step();
+                void connect_to_bus(const std::shared_ptr<Bus>& bus);
         private:
-                // note every ldh uses little endian address
+                void update_timers(unsigned int t_cycles);
+                void handle_interrupt();
+
                 std::uint8_t fetch_byte();
                 std::uint16_t fetch_word();
                 void push_word(std::uint16_t word);
@@ -593,11 +595,20 @@ class CPU {
                 std::uint16_t sp{0xFFFE};
                 std::shared_ptr<Bus> bus{};
                 struct OpCodeHandler{
+                        std::uint8_t cycles{};
                         std::string mneomic{};
                         std::function<void()> execute{};
                 };
                 std::vector<OpCodeHandler> lookup_table{};
                 std::vector<OpCodeHandler> cb_lookup_table{};
-
+                std::uint16_t div_addr{0xFF04};
+                std::uint16_t tima_addr{0xFF05};
+                std::uint16_t tma_addr{0xFF06};
+                std::uint16_t tac_addr{0xFF07};
+                std::uint16_t div_counter{0};
+                std::uint16_t tima_counter{0};
+                bool interrupt_master_enable{false};
+                bool enable_interrupt_next_cycle{false};
+                bool is_halted{false};
 };
 #endif

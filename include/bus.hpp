@@ -1,5 +1,6 @@
 #ifndef BUS_HPP
 #define BUS_HPP
+#include "joypad.hpp"
 #include <cstdint>
 #include <memory>
 constexpr std::size_t VRAM_SIZE{8192};
@@ -15,8 +16,14 @@ class Bus {
                 std::uint8_t read(std::uint16_t addr);
                 bool write(std::uint16_t addr, std::uint8_t data);
                 void insert_cartridge(const std::shared_ptr<Cartridge>& cart);
+                void connect_joypad(const std::shared_ptr<Joypad>& joypad);
+                void key_down(Joypad::Keys key);
+                void key_up(Joypad::Keys key);
+                void request_interrupt(std::uint8_t bit);
+                void inc_div();
         private:
                 std::shared_ptr<Cartridge> cartridge{};
+                std::shared_ptr<Joypad> joypad{};
                 std::uint8_t vram[VRAM_SIZE]{0};
                 std::uint8_t wram[WRAM_SIZE]{0};
                 std::uint8_t oam[OAM_SIZE]{0};
