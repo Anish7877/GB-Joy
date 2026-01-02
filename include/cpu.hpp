@@ -7,11 +7,13 @@
 #include <string>
 
 class Bus;
+class PPU;
 class CPU {
         public:
                 explicit CPU();
-                void step();
-                void connect_to_bus(const std::shared_ptr<Bus>& bus);
+               void step() noexcept;
+                void connect_to_bus(const std::shared_ptr<Bus>& bus) noexcept;
+                void connect_to_ppu(const std::shared_ptr<PPU>& ppu) noexcept;
         private:
                 void update_timers(unsigned int t_cycles);
                 void handle_interrupt();
@@ -594,6 +596,7 @@ class CPU {
                 std::uint16_t pc{0x0100};
                 std::uint16_t sp{0xFFFE};
                 std::shared_ptr<Bus> bus{};
+                std::shared_ptr<PPU> ppu{};
                 struct OpCodeHandler{
                         std::uint8_t cycles{};
                         std::string mnemonic{};

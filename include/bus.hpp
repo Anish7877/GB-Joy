@@ -14,13 +14,14 @@ class Bus {
         public:
                 explicit Bus() = default;
                 std::uint8_t read(std::uint16_t addr);
-                bool write(std::uint16_t addr, std::uint8_t data);
-                void insert_cartridge(const std::shared_ptr<Cartridge>& cart);
-                void connect_joypad(const std::shared_ptr<Joypad>& joypad);
+                void write(std::uint16_t addr, std::uint8_t data);
+                void insert_cartridge(const std::shared_ptr<Cartridge>& cart) noexcept;
+                void connect_joypad(const std::shared_ptr<Joypad>& joypad) noexcept;
                 void key_down(Joypad::Keys key);
                 void key_up(Joypad::Keys key);
-                void request_interrupt(std::uint8_t bit);
-                void inc_div();
+                void request_interrupt(std::uint8_t bit) noexcept;
+                void inc_div() noexcept;
+                void start_dma_transfer(std::uint8_t data) noexcept;
         private:
                 std::shared_ptr<Cartridge> cartridge{};
                 std::shared_ptr<Joypad> joypad{};

@@ -524,21 +524,20 @@ CPU::CPU(){
                 {4,std::string("cb_set_7_a"),[this](){this->cb_set_7_a();}},
         };
 }
-void CPU::connect_to_bus(const std::shared_ptr<Bus>& bus){
+void CPU::connect_to_bus(const std::shared_ptr<Bus>& bus) noexcept{
         this->bus = bus;
 }
 
-void CPU::connect_to_ppu(const std::shared_ptr<PPU>& ppu){
+void CPU::connect_to_ppu(const std::shared_ptr<PPU>& ppu) noexcept{
         this->ppu = ppu;
 }
 
-unsigned int CPU::step(){
+void CPU::step() noexcept{
         handle_interrupt();
 
         if(is_halted){
                 update_timers(4);
-                ppu->tick(4);
-                return 0;
+                return;
         }
         if(enable_interrupt_next_cycle){
                 enable_interrupt_next_cycle = false;
@@ -553,15 +552,16 @@ unsigned int CPU::step(){
                 update_timers(lookup_table[op_code].cycles);
         }
         lookup_table[op_code].execute();
-        return lookup_table[op_code].cycles;
 }
 
 void CPU::handle_interrupt(){
-        if(!interrupt_master_enable) return;
-
+        if(!bus) throw std::runtime_error(std::runtime_error("CPU Error: Bus not connected"));
         std::uint8_t ie{bus->read(0xFFFF)};
         std::uint8_t flags{bus->read(0xFF0F)};
-
+        if (ie & flags & 0x1F) {
+                is_halted = false;
+        }
+        if(!interrupt_master_enable) return;
         if(ie & flags){
                 std::cout << "Interrupt Handling\n";
                 for(int i{0};i<5;++i){
@@ -572,7 +572,6 @@ void CPU::handle_interrupt(){
                                 // jump to vector address
                                 pc = 0x40 + i*8;
                                 update_timers(20);
-                                is_halted = false;
                                 return;
                         }
                 }
@@ -580,6 +579,9 @@ void CPU::handle_interrupt(){
 }
 
 void CPU::update_timers(unsigned int t_cycles){
+        if(!bus) throw std::runtime_error("CPU Error: Bus not connected");
+        if(!ppu) throw std::runtime_error("CPU Error: PPU not connected");
+        ppu->tick(t_cycles);
         div_counter += t_cycles;
         if(div_counter >= 256){
                 div_counter -= 256;
@@ -613,6 +615,7 @@ void CPU::update_timers(unsigned int t_cycles){
 }
 
 std::uint8_t CPU::fetch_byte(){
+        if(!bus) throw std::runtime_error("CPU Error: Bus not connected");
         std::uint8_t byte{bus->read(pc)};
         pc++;
         return byte;
@@ -625,6 +628,7 @@ std::uint16_t CPU::fetch_word(){
 }
 
 void CPU::push_word(std::uint16_t word){
+        if(!bus) throw std::runtime_error("CPU Error: Bus not connected");
         sp--;
         bus->write(sp, static_cast<std::uint8_t>(word>>8));
         sp--;
@@ -632,6 +636,7 @@ void CPU::push_word(std::uint16_t word){
 }
 
 std::uint16_t CPU::pop_word(){
+        if(!bus) throw std::runtime_error("CPU Error: Bus not connected");
         std::uint8_t low{bus->read(sp)};
         sp++;
         std::uint8_t high{bus->read(sp)};

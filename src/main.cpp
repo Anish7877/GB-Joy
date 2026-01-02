@@ -1,30 +1,51 @@
-#include "../include/cpu.hpp"
+#include "../include/screen.hpp"
 #include "../include/bus.hpp"
-#include "../include/cartridge.hpp"
+#include "../include/cpu.hpp"
 #include "../include/ppu.hpp"
+#include "../include/cartridge.hpp"
+#include <exception>
 #include <iostream>
-#include <memory>
 
-int main(void){
-        std::shared_ptr<Cartridge> cartridge{std::make_shared<Cartridge>()};
-        std::shared_ptr<Bus> bus{std::make_shared<Bus>()};
-        std::shared_ptr<CPU> cpu{std::make_shared<CPU>()};
-        std::shared_ptr<Joypad> joypad{std::make_shared<Joypad>()};
-        std::shared_ptr<PPU> ppu{std::make_shared<PPU>()};
-        cartridge->load("/home/anish/Downloads/gameboy/Super Mario Land (World) (Rev 1).gb");
-        std::cout << "Cartridge Title : " << cartridge->get_cartridge_title() << '\n';
-        std::cout << "CBG Flag : " << (int)cartridge->get_cgb_flag() << '\n';
-        std::cout << "Cartridge Type : " << (int)cartridge->get_cartridge_type() << '\n';
-        std::cout << "Rom Size : " << cartridge->get_rom_size() << '\n';
-        std::cout << "Checksum : " << (int)cartridge->get_checksum() << '\n';
-        bus->insert_cartridge(cartridge);
-        bus->connect_joypad(joypad);
-        ppu->connect_to_bus(bus);
-        cpu->connect_to_bus(bus);
-        cpu->connect_to_ppu(ppu);
-        while(true){
-                unsigned int cycles{cpu->step()};
-                ppu->tick(cycles);
+int main(int argc, char** argv) {
+        try{
+                // 1. Setup Components
+                auto bus = std::make_shared<Bus>();
+                auto cpu = std::make_shared<CPU>();
+                auto ppu = std::make_shared<PPU>();
+                auto joypad = std::make_shared<Joypad>();
+                auto cart = std::make_shared<Cartridge>(); // Load your ROM
+
+                // 2. Connect
+                cart->load("/home/anish/Downloads/gameboy/tetris.gb");
+                cpu->connect_to_bus(bus);
+                cpu->connect_to_ppu(ppu); // Ensure CPU has PPU pointer for HALT ticks
+                ppu->connect_to_bus(bus);
+                bus->insert_cartridge(cart);
+                bus->connect_joypad(joypad);
+
+                // 3. Setup Screen
+                Screen screen{cart->get_cartridge_title()};
+                screen.connect_to_bus(bus);
+
+                // 4. Main Loop
+                bool quit = false;
+                while (!quit) {
+                        cpu->step();
+
+                        if (ppu->frame_complete) {
+                                ppu->frame_complete = false;
+
+                                screen.update_screen(ppu->get_buffer());
+
+                                // Handle Inputs
+                                if (screen.handle_events()) {
+                                        quit = true;
+                                }
+                        }}
         }
-        return 0;
+        catch(const std::exception& e){
+                std::cout << e.what() << '\n';
+        }
+
+    return 0;
 }
