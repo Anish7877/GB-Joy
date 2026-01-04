@@ -11,7 +11,7 @@ class PPU;
 class CPU {
         public:
                 explicit CPU();
-               void step() noexcept;
+                void step() noexcept;
                 void connect_to_bus(const std::shared_ptr<Bus>& bus) noexcept;
                 void connect_to_ppu(const std::shared_ptr<PPU>& ppu) noexcept;
         private:

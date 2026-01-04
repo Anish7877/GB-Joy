@@ -2,3 +2,5 @@
 !src/*.cpp
 !CMakeLists.txt
 !.gitignore
+!roms/*.gb
+build

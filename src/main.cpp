@@ -8,6 +8,9 @@
 
 int main(int argc, char** argv) {
         try{
+                if(argc < 2){
+                        throw std::runtime_error("Usage : GBJoy <path-to-gameboy-rom>");
+                }
                 // 1. Setup Components
                 auto bus = std::make_shared<Bus>();
                 auto cpu = std::make_shared<CPU>();
@@ -16,7 +19,7 @@ int main(int argc, char** argv) {
                 auto cart = std::make_shared<Cartridge>(); // Load your ROM
 
                 // 2. Connect
-                cart->load("/home/anish/Downloads/gameboy/tetris.gb");
+                cart->load(std::string(argv[1]));
                 cpu->connect_to_bus(bus);
                 cpu->connect_to_ppu(ppu); // Ensure CPU has PPU pointer for HALT ticks
                 ppu->connect_to_bus(bus);
@@ -24,8 +27,10 @@ int main(int argc, char** argv) {
                 bus->connect_joypad(joypad);
 
                 // 3. Setup Screen
-                Screen screen{cart->get_cartridge_title()};
+                Screen screen{cart->get_cartridge_title(), 6};
                 screen.connect_to_bus(bus);
+
+                bus->write(0xFF40, 0x91);
 
                 // 4. Main Loop
                 bool quit = false;

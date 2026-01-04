@@ -2,8 +2,9 @@
 #include "../include/bus.hpp"
 #include <stdexcept>
 
-Screen::Screen(std::string_view title){
+Screen::Screen(std::string_view title, unsigned int scale){
         window_title = title.data();
+        this->scale = scale;
         SDL_Init(SDL_INIT_VIDEO);
 
         window = SDL_CreateWindow(window_title.c_str(),
@@ -32,18 +33,6 @@ Screen::~Screen(){
 
 void Screen::connect_to_bus(const std::shared_ptr<Bus>& bus) noexcept{
         this->bus = bus;
-}
-
-void Screen::update_window_width(unsigned int new_width) noexcept{
-        window_width = new_width;
-}
-
-void Screen::update_window_height(unsigned int new_height) noexcept{
-        window_height = new_height;
-}
-
-void Screen::update_window_title(std::string_view new_title) noexcept{
-        window_title = new_title;
 }
 
 void Screen::update_screen(const std::vector<std::uint32_t>& video_buffer){
