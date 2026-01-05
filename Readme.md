@@ -29,7 +29,7 @@ sudo apt-get install cmake libsdl2-dev g++
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Anish7877/GB-Joy.git
    cd GBJoy
    ```
 
