@@ -7,8 +7,8 @@
 class Bus;
 class APU {
         public:
-                APU();
-                void connect_to_bus(const std::shared_ptr<Bus>& bus);
+                explicit APU();
+                void connect_to_bus(const std::shared_ptr<Bus>& bus) noexcept;
 
                 void tick(int cycles);
 
@@ -16,7 +16,6 @@ class APU {
                 void write(std::uint16_t addr, std::uint8_t data);
 
                 float get_sample() const;
-
         private:
                 std::shared_ptr<Bus> bus{};
                 bool audio_master_enable{false};
