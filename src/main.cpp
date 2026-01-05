@@ -9,10 +9,33 @@
 #include <iostream>
 #include <memory>
 
-int main(int argc, char** argv) {
+void print_usage(){
+        std::cout << "Usage :-" << '\n';
+        std::cout << "./GBJoy <path-to-gameboy-dmg-rom>" << '\n';
+        std::cout << "./GBJoy help" << '\n';
+}
+void help_menu(){
+        std::cout << "Controls :-" << '\n';
+        std::cout << "Dpad Up    - W" << '\n';
+        std::cout << "Dpad Down  - S" << '\n';
+        std::cout << "Dpad Left  - A" << '\n';
+        std::cout << "Dpad Right - D" << '\n';
+        std::cout << "Start      - 1" << '\n';
+        std::cout << "Select     - 2" << '\n';
+        std::cout << "A          - J" << '\n';
+        std::cout << "B          - K" << '\n';
+}
+int main(int argc, char** argv){
+        using namespace std::literals;
         try {
-                if (argc < 2) {
-                        throw std::runtime_error("Usage : GBJoy <path-to-gameboy-rom>");
+                if (argc < 2){
+                        throw std::runtime_error("Usage :-\n./GBJoy <path-to-gameboy-rom>");
+                }
+                std::string arg{argv[1]};
+                if(argv[1] == "help"s){
+                        print_usage();
+                        help_menu();
+                        return 0;
                 }
                 static constexpr int TARGET_FPS{60};
                 static constexpr int frame_delay{1000 / TARGET_FPS};
@@ -42,7 +65,7 @@ int main(int argc, char** argv) {
                 bus->write(0xFF40, 0x91);
 
                 bool quit{false};
-                while (!quit) {
+                while (!quit){
                         frame_start_time = SDL_GetTicks();
 
                         while (!ppu->set_frame_complete_flag()){
@@ -69,10 +92,10 @@ int main(int argc, char** argv) {
                         }
                 }
 
-        } catch(const std::exception& e) {
-                std::cout << "Error: " << e.what() << '\n';
+        }
+        catch(const std::exception& e){
+                std::cout << e.what() << '\n';
                 return -1;
         }
-
         return 0;
 }

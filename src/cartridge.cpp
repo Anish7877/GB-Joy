@@ -6,7 +6,7 @@
 #include <vector>
 
 bool Cartridge::load(std::string_view path){
-        if(!std::filesystem::exists(path.data())) throw std::runtime_error("Cartridge Error: Rom File doesn't exists");
+        if(!std::filesystem::exists(path.data())) throw std::runtime_error("Cartridge Error: Rom File doesn't exist");
         std::ifstream file{path.data(), std::ios::binary | std::ios::ate};
         if(!file.is_open()) return false;
 
