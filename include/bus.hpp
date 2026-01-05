@@ -10,11 +10,13 @@ constexpr std::size_t IO_SIZE{128};
 constexpr std::size_t HRAM_SIZE{127};
 
 class Cartridge;
+class APU;
 class Bus {
         public:
                 explicit Bus() = default;
                 std::uint8_t read(std::uint16_t addr);
                 void write(std::uint16_t addr, std::uint8_t data);
+                void connect_apu(const std::shared_ptr<APU>& apu) noexcept;
                 void insert_cartridge(const std::shared_ptr<Cartridge>& cart) noexcept;
                 void connect_joypad(const std::shared_ptr<Joypad>& joypad) noexcept;
                 void key_down(Joypad::Keys key);
@@ -25,6 +27,7 @@ class Bus {
         private:
                 std::shared_ptr<Cartridge> cartridge{};
                 std::shared_ptr<Joypad> joypad{};
+                std::shared_ptr<APU> apu{};
                 std::uint8_t vram[VRAM_SIZE]{0};
                 std::uint8_t wram[WRAM_SIZE]{0};
                 std::uint8_t oam[OAM_SIZE]{0};

@@ -19,9 +19,11 @@ class PPU{
                 std::uint8_t get_wx() const noexcept;
                 std::uint8_t get_wy() const noexcept;
                 std::vector<std::uint32_t> get_buffer() const noexcept {return video_buffer;}
-                bool frame_complete{false};
+                bool set_frame_complete_flag() const noexcept {return frame_complete;};
+                void unset_frame_complete_flag() noexcept {frame_complete = false;}
         private:
                 static constexpr std::uint32_t colors[4]{0xFFE0F8D0, 0xFF88C070, 0xFF346856, 0xFF081820};
+                bool frame_complete{false};
                 struct ObjectAttribute{
                         std::uint8_t y{};
                         std::uint8_t x{};

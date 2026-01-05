@@ -1,6 +1,7 @@
 #include "../include/cpu.hpp"
 #include "../include/bus.hpp"
 #include "../include/ppu.hpp"
+#include "../include/apu.hpp"
 #include <iostream>
 #include <memory>
 
@@ -532,6 +533,10 @@ void CPU::connect_to_ppu(const std::shared_ptr<PPU>& ppu) noexcept{
         this->ppu = ppu;
 }
 
+void CPU::connect_to_apu(const std::shared_ptr<APU>& apu) noexcept{
+        this->apu = apu;
+}
+
 void CPU::step() noexcept{
         handle_interrupt();
 
@@ -580,6 +585,8 @@ void CPU::update_timers(unsigned int t_cycles){
         if(!bus) throw std::runtime_error("CPU Error: Bus not connected");
         if(!ppu) throw std::runtime_error("CPU Error: PPU not connected");
         ppu->tick(t_cycles);
+        apu->tick(t_cycles);
+        internal_audio_accumulator += t_cycles;
         div_counter += t_cycles;
         if(div_counter >= 256){
                 div_counter -= 256;

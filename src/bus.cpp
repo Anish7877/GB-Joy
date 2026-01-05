@@ -1,10 +1,15 @@
 #include "../include/bus.hpp"
 #include "../include/cpu.hpp"
 #include "../include/cartridge.hpp"
+#include "../include/apu.hpp"
 #include <stdexcept>
 
 void Bus::insert_cartridge(const std::shared_ptr<Cartridge>& cart) noexcept{
         cartridge = cart;
+}
+
+void Bus::connect_apu(const std::shared_ptr<APU>& apu) noexcept{
+        this->apu = apu;
 }
 
 void Bus::connect_joypad(const std::shared_ptr<Joypad>& joypad) noexcept{
@@ -14,7 +19,7 @@ void Bus::connect_joypad(const std::shared_ptr<Joypad>& joypad) noexcept{
 std::uint8_t Bus::read(std::uint16_t addr){
         if(!cartridge) throw std::runtime_error("Bus Error: Cartridge not inserted");
         if(!joypad) throw std::runtime_error("Bus Error: Joypad not connected");
-        if(addr >= 0x000 && addr < 0x8000){
+        if(addr < 0x8000){
                 return cartridge->read(addr);
         }
         else if(addr >= 0x8000 && addr <= 0x9FFF){
@@ -48,7 +53,7 @@ std::uint8_t Bus::read(std::uint16_t addr){
 }
 
 void Bus::write(std::uint16_t addr, std::uint8_t data){
-        if(addr >= 0x000 && addr < 0x8000){
+        if(addr < 0x8000){
                 cartridge->write(addr, data);
         }
         else if(addr >= 0x8000 && addr <= 0x9FFF){
@@ -69,6 +74,10 @@ void Bus::write(std::uint16_t addr, std::uint8_t data){
         else if(addr >= 0xFF00 && addr <= 0xFF7F){
                 if(addr == 0xFF04){
                         io_registers[4] = 0;
+                        return;
+                }
+                if (addr >= 0xFF10 && addr <= 0xFF3F) {
+                        if (apu) apu->write(addr, data);
                         return;
                 }
                 if(addr == 0xFF46){

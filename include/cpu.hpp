@@ -8,12 +8,16 @@
 
 class Bus;
 class PPU;
+class APU;
 class CPU {
         public:
                 explicit CPU();
                 void step() noexcept;
                 void connect_to_bus(const std::shared_ptr<Bus>& bus) noexcept;
                 void connect_to_ppu(const std::shared_ptr<PPU>& ppu) noexcept;
+                void connect_to_apu(const std::shared_ptr<APU>& apu) noexcept;
+                float get_internal_audio_accumulator() const noexcept { return internal_audio_accumulator;}
+                void set_internal_audio_accumulator(float new_val) noexcept {internal_audio_accumulator = new_val;}
         private:
                 void update_timers(unsigned int t_cycles);
                 void handle_interrupt();
@@ -595,8 +599,10 @@ class CPU {
                 };
                 std::uint16_t pc{0x0100};
                 std::uint16_t sp{0xFFFE};
+                float internal_audio_accumulator{0.0f};
                 std::shared_ptr<Bus> bus{};
                 std::shared_ptr<PPU> ppu{};
+                std::shared_ptr<APU> apu{};
                 struct OpCodeHandler{
                         std::uint8_t cycles{};
                         std::string mnemonic{};

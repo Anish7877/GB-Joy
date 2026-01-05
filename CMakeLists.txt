@@ -15,6 +15,8 @@ set(SOURCE_FILES
         "src/cartridge.cpp"
         "src/screen.cpp"
         "src/joypad.cpp"
+        "src/apu.cpp"
+        "src/audio.cpp"
 )
 set(COMPILER_OPTIONS
         "-O3"
