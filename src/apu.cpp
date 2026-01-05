@@ -12,7 +12,7 @@ APU::APU() {
     ch1 = {}; ch2 = {}; ch3 = {}; ch4 = {};
 }
 
-void APU::connect_to_bus(const std::shared_ptr<Bus>& bus){
+void APU::connect_to_bus(const std::shared_ptr<Bus>& bus) noexcept{
         this->bus = bus;
 }
 
