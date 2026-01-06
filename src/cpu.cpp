@@ -551,7 +551,6 @@ void CPU::step() noexcept{
 
         std::uint8_t op_code{bus->read(pc)};
         pc++;
-        std::cout << lookup_table[op_code].mnemonic << '\n';
         if(lookup_table[op_code].cycles){
                 update_timers(lookup_table[op_code].cycles);
         }
