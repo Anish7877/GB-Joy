@@ -59,8 +59,8 @@ sudo apt-get install cmake libsdl2-dev g++
 
 2. **Build the project:**
    ```bash
-      cd windows
-      make
+   cd windows
+   make
    ```
 
 ## Usage
