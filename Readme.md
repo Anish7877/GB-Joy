@@ -53,11 +53,26 @@ sudo apt-get install cmake libsdl2-dev g++
 
 1. **Install MinGW64:**
    - Download the latest version from https://winlibs.com/
-   - Extract to a location `C:\mingw64`
+   - Extract to a location (e.g., C:\mingw64)
    - Add `C:\mingw64\bin` to your system PATH
 
+2. **Install SDL2:**
+   - Download SDL2 development libraries from [this link](https://github.com/libsdl-org/SDL/releases/download/release-2.32.10/SDL2-devel-2.32.10-mingw.zip)
+   - Create a folder named SDL2 inside `GB-Joy\windows` folder
+   - Extract SDL2 development libraries zip
+   - Copy the contents of x86_64-w64-mingw32 folder into SDL2 folder created in second point
+   - Your directory structure should look like:
+     ```
+     GB-Joy\
+     └── windows\
+         └── SDL2\
+             ├── bin\
+             ├── include\
+             ├── lib\
+             └── share\
+     ```
 
-2. **Build the project:**
+3. **Build the project:**
    ```bash
    cd windows
    make
