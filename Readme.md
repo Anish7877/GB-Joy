@@ -49,6 +49,20 @@ sudo apt-get install cmake libsdl2-dev g++
    make
    ```
 
+#### Windows
+
+1. **Install MinGW64:**
+   - Download the latest version from https://winlibs.com/
+   - Extract to a location `C:\mingw64`
+   - Add `C:\mingw64\bin` to your system PATH
+
+
+2. **Build the project:**
+   ```bash
+      cd windows
+      make
+   ```
+
 ## Usage
 
 Run the emulator from the command line by passing the path to a Game Boy ROM file as an argument:

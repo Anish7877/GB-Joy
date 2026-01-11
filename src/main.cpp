@@ -53,7 +53,7 @@ int main(int argc, char** argv){
                 std::shared_ptr<Screen> screen{};
 
                 cart->load(std::string(argv[1]));
-                screen = std::make_shared<Screen>(cart->get_cartridge_title(), 6);
+                screen = std::make_shared<Screen>(cart->get_cartridge_title(), 4);
                 cpu->connect_to_bus(bus);
                 cpu->connect_to_ppu(ppu);
                 cpu->connect_to_apu(apu);
