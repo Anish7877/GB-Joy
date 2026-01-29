@@ -41,8 +41,6 @@ int main(int argc, char** argv){
                 static constexpr int frame_delay{1000 / TARGET_FPS};
                 std::uint32_t frame_start_time{0};
                 int frame_time{0};
-                std::uint32_t fps_timer{0};
-                int counted_frames{0};
                 std::shared_ptr<Bus> bus{std::make_shared<Bus>()};
                 std::shared_ptr<CPU> cpu{std::make_shared<CPU>()};
                 std::shared_ptr<PPU> ppu{std::make_shared<PPU>()};
@@ -87,15 +85,6 @@ int main(int argc, char** argv){
                         ppu->unset_frame_complete_flag();
                         screen->update_screen(ppu->get_buffer());
                         if (screen->handle_events()) quit = true;
-                        counted_frames++;
-
-                        if(SDL_GetTicks() - fps_timer >= 1000){
-                                std::cout << "FPS : " << counted_frames << '\n';
-
-                                counted_frames = 0;
-                                fps_timer = SDL_GetTicks();
-                        }
-
                         frame_time = SDL_GetTicks() - frame_start_time;
                         if (frame_delay > frame_time) {
                                 SDL_Delay(frame_delay - frame_time);

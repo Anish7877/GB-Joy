@@ -20,6 +20,7 @@ set(SOURCE_FILES
 )
 set(COMPILER_OPTIONS
         "-O3"
+        "-march=native"
         "-Wall"
         "-Wextra"
 )
